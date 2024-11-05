@@ -1,5 +1,7 @@
 #!/bin/bash
 
+date
+
 path=$(pwd)
 
 results="results/"
@@ -50,7 +52,7 @@ exe_bechmark() {
 	prog_result="-redir:sim ${path}/${results}${curr_prog}_${1}_${2}"
 	prog_out="${path}/${outputs}${curr_prog}_${1}_${2}.out"
 	prog_err="${path}/${errors}${curr_prog}_${1}_${2}.err"
-	${simplescalar} ${parameters} ${branch_pred} ${prog_result} ${prog_exe} < ${prog_in} > ${prog_out} 2> ${prog_err}
+	${simplescalar} ${parameters} ${branch_pred} ${prog_result} ${prog_exe} ${prog_in} > ${prog_out} 2> ${prog_err}
 }
 
 run_benchmarks() {
@@ -72,19 +74,15 @@ run_benchmarks() {
 	curr_predictor=${second_level}
 	for value in "${values[@]}"; do
 		log2=$(echo "l(${value}) / l(2)" | bc -l)
-		branch_pred="-bpred:${curr_predictor} 1 ${value} ${log2} 1"
+		rounded_log2=$(printf "%.0f" "$log2")
+		branch_pred="-bpred:${curr_predictor} 1 ${value} ${rounded_log2} 1"
 		exe_bechmark "Gshare" ${value}
 	done
 
 	for value in "${values[@]}"; do
 		log2=$(echo "l(${value}) / l(2)" | bc -l)
-		branch_pred="-bpred:${curr_predictor} 1 ${value} ${log2} 0"
-		exe_bechmark "Gselect" ${value}
-	done
-
-	for value in "${pag_x_values[@]}"; do
-		log2=$(echo "l(${value}) / l(2)" | bc -l)
-		branch_pred="-bpred:${curr_predictor} 1 ${value} ${log2} 0"
+		rounded_log2=$(printf "%.0f" "$log2")
+		branch_pred="-bpred:${curr_predictor} 1 ${value} ${rounded_log2} 0"
 		exe_bechmark "Gselect" ${value}
 	done
 
@@ -92,26 +90,27 @@ run_benchmarks() {
 		y_value="${pag_y_values[$i]}"
 		x_value="${pag_x_values[$i]}"
 		log2=$(echo "l(${x_value}) / l(2)" | bc -l)
-		branch_pred="-bpred:${curr_predictor} ${y_value} ${x_value} ${log2} 0"
+		rounded_log2=$(printf "%.0f" "$log2")
+		branch_pred="-bpred:${curr_predictor} ${y_value} ${x_value} ${rounded_log2} 0"
 		exe_bechmark "Pag" ${y_value}
 	done
 }
 
 curr_prog="ammp"
 pushd "${programs_root}/${curr_prog}/data/ref"
-set_program "${curr_prog}.in"
+set_program "< ${curr_prog}.in"
 run_benchmarks
 popd
 
 curr_prog="applu"
 pushd "${programs_root}/${curr_prog}/data/ref"
-set_program "${curr_prog}.in"
+set_program "< ${curr_prog}.in"
 run_benchmarks
 popd
 
 curr_prog="equake"
 pushd "${programs_root}/${curr_prog}/data/ref"
-set_program "${curr_prog}.in"
+set_program "< inp.in"
 run_benchmarks
 popd
 
@@ -126,3 +125,5 @@ pushd "${programs_root}/${curr_prog}/data/ref"
 set_program "net.in arch.in place.out dum.out -nodisp -place_only -init_t 5 -exit_t 0.005 -alpha_t 0.9412 -inner_num 2"
 run_benchmarks
 popd
+
+date
