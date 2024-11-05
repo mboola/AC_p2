@@ -1,0 +1,128 @@
+#!/bin/bash
+
+path=$(pwd)
+
+results="results/"
+outputs="outputs/"
+errors="errors/"
+
+if [ ! -d ${results} ]; then
+	mkdir ${results}
+fi
+
+if [ ! -d ${outputs} ]; then
+	mkdir ${outputs}
+fi
+
+if [ ! -d ${errors} ]; then
+	mkdir ${errors}
+fi
+
+# Set path to the root directory where the programs are located
+programs_root="${path}/programs/"
+
+# Set up paths and variables
+simplescalar=${programs_root}"simplesim-3.0_acx2/sim-outorder"
+fastfwd="-fastfwd 100000000"
+maxinst="-max:inst 100000000"
+memwidth="-mem:width 32"
+memlat="-mem:lat 300 2"
+
+parameters="${fastfwd} ${maxinst} ${memwidth} ${memlat}"
+
+nottaken="nottaken"
+taken="taken"
+perfect="perfect"
+bimodal="bimod"
+second_level="2lev"
+
+values=("8" "32" "128" "512" "2048")
+
+pag_y_values=("4" "8" "16" "32" "64" "32")
+pag_x_values=("4" "16" "64" "256" "1024" "2048")
+
+set_program() {
+	prog_exe=${programs_root}"${curr_prog}/exe/${curr_prog}.exe"
+	prog_in="${1}"
+}
+
+exe_bechmark() {
+	prog_result="-redir:sim ${path}/${results}${curr_prog}_${1}_${2}"
+	prog_out="${path}/${outputs}${curr_prog}_${1}_${2}.out"
+	prog_err="${path}/${errors}${curr_prog}_${1}_${2}.err"
+	${simplescalar} ${parameters} ${branch_pred} ${prog_result} ${prog_exe} < ${prog_in} > ${prog_out} 2> ${prog_err}
+}
+
+run_benchmarks() {
+	branch_pred="-bpred ${nottaken}"
+	exe_bechmark ${nottaken} "0"
+	
+	branch_pred="-bpred ${taken}"
+	exe_bechmark ${taken} "0"
+
+	branch_pred="-bpred ${perfect}"
+	exe_bechmark ${perfect} "0"
+
+	curr_predictor=${bimodal}
+	for value in "${values[@]}"; do
+		branch_pred="-bpred:${curr_predictor} ${value}"
+		exe_bechmark ${bimodal} ${value}
+	done
+
+	curr_predictor=${second_level}
+	for value in "${values[@]}"; do
+		log2=$(echo "l(${value}) / l(2)" | bc -l)
+		branch_pred="-bpred:${curr_predictor} 1 ${value} ${log2} 1"
+		exe_bechmark "Gshare" ${value}
+	done
+
+	for value in "${values[@]}"; do
+		log2=$(echo "l(${value}) / l(2)" | bc -l)
+		branch_pred="-bpred:${curr_predictor} 1 ${value} ${log2} 0"
+		exe_bechmark "Gselect" ${value}
+	done
+
+	for value in "${pag_x_values[@]}"; do
+		log2=$(echo "l(${value}) / l(2)" | bc -l)
+		branch_pred="-bpred:${curr_predictor} 1 ${value} ${log2} 0"
+		exe_bechmark "Gselect" ${value}
+	done
+
+	for i in "${!pag_y_values[@]}"; do
+		y_value="${pag_y_values[$i]}"
+		x_value="${pag_x_values[$i]}"
+		log2=$(echo "l(${x_value}) / l(2)" | bc -l)
+		branch_pred="-bpred:${curr_predictor} ${y_value} ${x_value} ${log2} 0"
+		exe_bechmark "Pag" ${y_value}
+	done
+}
+
+curr_prog="ammp"
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "${curr_prog}.in"
+run_benchmarks
+popd
+
+curr_prog="applu"
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "${curr_prog}.in"
+run_benchmarks
+popd
+
+curr_prog="equake"
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "${curr_prog}.in"
+run_benchmarks
+popd
+
+curr_prog="eon"
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "chair.control.cook chair.camera chair.surfaces chair.cook.ppm ppm pixels_out.cook"
+run_benchmarks
+popd
+
+curr_prog="vpr"
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "net.in arch.in place.out dum.out -nodisp -place_only -init_t 5 -exit_t 0.005 -alpha_t 0.9412 -inner_num 2"
+run_benchmarks
+popd
