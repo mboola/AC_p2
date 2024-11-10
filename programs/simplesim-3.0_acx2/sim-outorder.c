@@ -123,6 +123,11 @@ static int twolev_nelt = 4;
 static int twolev_config[4] =
   { /* l1size */1, /* l2size */1024, /* hist */8, /* xor */FALSE};
 
+/* yags predictor config (<GBHR: 1> <PHT entries: X> <g> <0>) */
+static int yags_nelt = 4;
+static int yags_config[4] =
+  { /* gbhr_size */1, /* pht_size */1024, /* g */5, /* xor */FALSE};
+
 /* combining predictor config (<meta_table_size> */
 static int comb_nelt = 1;
 static int comb_config[1] =
@@ -666,6 +671,13 @@ sim_reg_options(struct opt_odb_t *odb)
                    twolev_config, twolev_nelt, &twolev_nelt,
 		   /* default */twolev_config,
                    /* print */TRUE, /* format */NULL, /* !accrue */FALSE);
+  
+  opt_reg_int_list(odb, "-bpred:yags",
+                   "yags predictor config"
+         "(1 <PHT size: X> <g> 0)",
+                   yags_config, yags_nelt, &yags_nelt,
+      /* default */yags_config,
+                   /* print */TRUE, /* format */NULL, /* !accrue */FALSE);
 
   opt_reg_int_list(odb, "-bpred:comb",
 		   "combining predictor config (<meta_table_size>)",
@@ -952,6 +964,23 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
 			  /* btb assoc */btb_config[1],
 			  /* ret-addr stack size */ras_size);
     }
+  else if (!mystricmp(pred_type, "yags"))
+  {
+    /* 2-level adaptive predictor, bpred_create() checks args */
+      if (yags_nelt != 4)
+	      fatal("bad yags pred config (<1> <PHT: size> <g> <0>)");
+
+      pred = bpred_create(BPredYags,
+			  /* bimod table size */0,
+			  /* 2lev l1 size */yags_config[0],
+			  /* 2lev l2 size */yags_config[1],
+			  /* meta table size */0,
+			  /* history reg size */yags_config[2],
+			  /* history xor address */yags_config[3],
+			  /* btb sets */0,
+			  /* btb assoc */0,
+			  /* ret-addr stack size */ras_size);
+  }
   else if (!mystricmp(pred_type, "comb"))
     {
       /* combining predictor, bpred_create() checks args */
