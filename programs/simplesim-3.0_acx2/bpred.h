@@ -104,8 +104,8 @@ enum bpred_class {
   BPred2bit,			/* 2-bit saturating cntr pred (dir mapped) */
   BPredTaken,			/* static predict taken */
   BPredNotTaken,		/* static predict not taken */
-  BPredYags,
-  BPred_NUM
+  BPred_NUM,
+  BPredYags
 };
 
 /* an entry in a BTB */
@@ -116,12 +116,12 @@ struct bpred_btb_ent_t {
   struct bpred_btb_ent_t *prev, *next; /* lru chaining pointers */
 };
 
-struct gbhr_t {
+struct gbhr_t{
   char n_bits; // g : Must be between 1 and 5
-  int history_register; // we access here the lower g bits.
+  char history_register; // we access here the lower g bits.
 };
 
-struct pht_t {
+struct pht_t{
   unsigned int entries; // size c : 4, 16, 64, 256, 1024 entries
   unsigned char *table; // 2 bits stored. direct access with g + i from jump instruction
 };
@@ -141,10 +141,10 @@ struct bpred_dir_t {
       int xor;			/* history xor address flag */
       int *shiftregs;		/* level-1 history table */
       unsigned char *l2table;	/* level-2 prediction state table */
-      gbhr_t gbhr;
-      pht_t pht;
-      pht_t taken_pht;
-      pht_t nottaken_pht;
+      struct gbhr_t gbhr;
+      struct pht_t pht;
+      struct pht_t taken_pht;
+      struct pht_t nottaken_pht;
       int i_mask;
       int g_mask;
     } two;
@@ -267,7 +267,7 @@ bpred_lookup(struct bpred_t *pred,	/* branch predictor instance */
  * hopefully this uncorrupts the stack. */
 void
 bpred_recover(struct bpred_t *pred,	/* branch predictor instance */
-	      md_addr_t baddr,		/* branch address */
+	      md_addr_t baddr,		/* configbranch address */
 	      int stack_recover_idx);	/* Non-speculative top-of-stack;
 					 * used on mispredict recovery */
 

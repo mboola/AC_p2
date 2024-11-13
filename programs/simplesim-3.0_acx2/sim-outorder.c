@@ -673,8 +673,8 @@ sim_reg_options(struct opt_odb_t *odb)
                    /* print */TRUE, /* format */NULL, /* !accrue */FALSE);
   
   opt_reg_int_list(odb, "-bpred:yags",
-                   "yags predictor config"
-         "(1 <PHT size: X> <g> 0)",
+                   "yags predictor config "
+         "(1 <PHT size: X> <GBHR bits: g> 0)",
                    yags_config, yags_nelt, &yags_nelt,
       /* default */yags_config,
                    /* print */TRUE, /* format */NULL, /* !accrue */FALSE);
@@ -969,6 +969,8 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
     /* 2-level adaptive predictor, bpred_create() checks args */
       if (yags_nelt != 4)
 	      fatal("bad yags pred config (<1> <PHT: size> <g> <0>)");
+      if (btb_nelt != 2)
+	      fatal("bad btb config (<num_sets> <associativity>)");
 
       pred = bpred_create(BPredYags,
 			  /* bimod table size */0,
@@ -977,8 +979,8 @@ sim_check_options(struct opt_odb_t *odb,        /* options database */
 			  /* meta table size */0,
 			  /* history reg size */yags_config[2],
 			  /* history xor address */yags_config[3],
-			  /* btb sets */0,
-			  /* btb assoc */0,
+			  /* btb sets */btb_config[0],
+			  /* btb assoc */btb_config[1],
 			  /* ret-addr stack size */ras_size);
   }
   else if (!mystricmp(pred_type, "comb"))
