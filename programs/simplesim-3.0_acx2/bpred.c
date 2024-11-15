@@ -205,7 +205,7 @@ static void bpred_yags_create(struct bpred_dir_t *pred_dir, unsigned int l1size,
 
   // Initialize GBHR
   pred_dir->config.two.gbhr.n_bits = shift_width;
-  pred_dir->config.two.gbhr.history_register = 0b11111;
+  pred_dir->config.two.gbhr.history_register = 0b11111; //00011111
   // Initialize PHT
   pred_dir->config.two.pht.table = malloc(sizeof(char) * l2size);
   if (pred_dir->config.two.pht.table == NULL)
@@ -619,12 +619,14 @@ static char *yags_prediction(struct bpred_dir_t *pred_dir, md_addr_t baddr)
     if (mask == tag)
     {
       found = 1;
+      pred_dir->config.two.nottaken_pht.table[c_bits % pred_dir->config.two.nottaken_pht.entries] &= 0b00000011;
       p = &(pred_dir->config.two.nottaken_pht.table[c_bits % pred_dir->config.two.nottaken_pht.entries]);
     }
   }
   else
   {
     prediction = pred_dir->config.two.taken_pht.table[c_bits % pred_dir->config.two.taken_pht.entries];
+    pred_dir->config.two.taken_pht.table[c_bits % pred_dir->config.two.taken_pht.entries] &= 0b00000011;
     mask = (prediction & 0b11111100) >> 2;
     if (mask == tag)
     {
