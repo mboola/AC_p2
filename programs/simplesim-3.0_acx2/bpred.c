@@ -224,7 +224,7 @@ static void bpred_yags_create(struct bpred_dir_t *pred_dir, unsigned int l1size,
   pred_dir->config.two.nottaken_pht.table = malloc(sizeof(char) * pht_size);
   if (pred_dir->config.two.nottaken_pht.table == NULL)
     fatal("out of virtual memory");
-  my_memset(pred_dir->config.two.taken_pht.table, 0b11111111, pht_size);
+  my_memset(pred_dir->config.two.nottaken_pht.table, 0b11111111, pht_size);
   pred_dir->config.two.taken_pht.entries = pht_size;
   pred_dir->config.two.nottaken_pht.entries = pht_size;
 
@@ -626,11 +626,11 @@ static char *yags_prediction(struct bpred_dir_t *pred_dir, md_addr_t baddr)
   else
   {
     prediction = pred_dir->config.two.taken_pht.table[c_bits % pred_dir->config.two.taken_pht.entries];
-    pred_dir->config.two.taken_pht.table[c_bits % pred_dir->config.two.taken_pht.entries] &= 0b00000011;
     mask = (prediction & 0b11111100) >> 2;
     if (mask == tag)
     {
       found = 1;
+      pred_dir->config.two.taken_pht.table[c_bits % pred_dir->config.two.taken_pht.entries] &= 0b00000011;
       p = &(pred_dir->config.two.taken_pht.table[c_bits % pred_dir->config.two.taken_pht.entries]);
     }
   }
