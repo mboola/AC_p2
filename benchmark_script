@@ -97,21 +97,19 @@ run_benchmarks() {
 		echo "${curr_prog} ${curr_predictor} ${value}"
 		exe_bechmark "Pag" ${x_value}
 	done
+
+	curr_predictor="yags"
+	branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 4 1 0"
+	exe_bechmark "Yags" "4_1"
+	branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 16 2 0"
+	exe_bechmark "Yags" "16_2"
+	branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 64 3 0"
+	exe_bechmark "Yags" "64_3"
+	branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 256 4 0"
+	exe_bechmark "Yags" "256_4"
+	branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 1024 5 0"
+	exe_bechmark "Yags" "1024_5"
 }
-
-curr_prog="eon"
-special=n
-pushd "${programs_root}/${curr_prog}/data/ref"
-set_program "chair.control.cook chair.camera chair.surfaces chair.cook.ppm ppm pixels_out.cook"
-run_benchmarks
-popd
-
-curr_prog="vpr"
-special=n
-pushd "${programs_root}/${curr_prog}/data/ref"
-set_program "net.in arch.in place.out dum.out -nodisp -place_only -init_t 5 -exit_t 0.005 -alpha_t 0.9412 -inner_num 2"
-run_benchmarks
-popd
 
 curr_prog="ammp"
 special=y
@@ -131,6 +129,20 @@ curr_prog="equake"
 special=y
 pushd "${programs_root}/${curr_prog}/data/ref"
 set_program "inp.in"
+run_benchmarks
+popd
+
+curr_prog="eon"
+special=n
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "chair.control.cook chair.camera chair.surfaces chair.cook.ppm ppm pixels_out.cook"
+run_benchmarks
+popd
+
+curr_prog="vpr"
+special=n
+pushd "${programs_root}/${curr_prog}/data/ref"
+set_program "net.in arch.in place.out dum.out -nodisp -place_only -init_t 5 -exit_t 0.005 -alpha_t 0.9412 -inner_num 2"
 run_benchmarks
 popd
 
