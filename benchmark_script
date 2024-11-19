@@ -60,21 +60,13 @@ exe_bechmark() {
 }
 
 run_benchmarks() {
-	branch_pred="-bpred ${nottaken}"
-	echo "${curr_prog} ${nottaken}"
-	exe_bechmark ${nottaken} "0"
-	
-	branch_pred="-bpred ${taken}"
-	echo "${curr_prog} ${taken}"
-	exe_bechmark ${taken} "0"
-
 	branch_pred="-bpred ${perfect}"
 	echo "${curr_prog} ${perfect}"
 	exe_bechmark ${perfect} "0"
 
 	curr_predictor=${bimodal}
 	for value in "${values[@]}"; do
-		branch_pred="-bpred:${curr_predictor} ${value}"
+		branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} ${value}"
 		echo "${curr_prog} ${curr_predictor} ${value}"
 		exe_bechmark ${bimodal} ${value}
 	done
@@ -83,7 +75,7 @@ run_benchmarks() {
 	for value in "${values[@]}"; do
 		log2=$(echo "l(${value}) / l(2)" | bc -l)
 		rounded_log2=$(printf "%.0f" "$log2")
-		branch_pred="-bpred:${curr_predictor} 1 ${value} ${rounded_log2} 1"
+		branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 ${value} ${rounded_log2} 1"
 		echo "${curr_prog} ${curr_predictor} ${value}"
 		exe_bechmark "Gshare" ${value}
 	done
@@ -91,7 +83,7 @@ run_benchmarks() {
 	for value in "${values[@]}"; do
 		log2=$(echo "l(${value}) / l(2)" | bc -l)
 		rounded_log2=$(printf "%.0f" "$log2")
-		branch_pred="-bpred:${curr_predictor} 1 ${value} ${rounded_log2} 0"
+		branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} 1 ${value} ${rounded_log2} 0"
 		echo "${curr_prog} ${curr_predictor} ${value}"
 		exe_bechmark "Gselect" ${value}
 	done
@@ -101,9 +93,9 @@ run_benchmarks() {
 		x_value="${pag_x_values[$i]}"
 		log2=$(echo "l(${x_value}) / l(2)" | bc -l)
 		rounded_log2=$(printf "%.0f" "$log2")
-		branch_pred="-bpred:${curr_predictor} ${y_value} ${x_value} ${rounded_log2} 0"
+		branch_pred="-bpred ${curr_predictor} -bpred:${curr_predictor} ${y_value} ${x_value} ${rounded_log2} 0"
 		echo "${curr_prog} ${curr_predictor} ${value}"
-		exe_bechmark "Pag" ${y_value}
+		exe_bechmark "Pag" ${x_value}
 	done
 }
 

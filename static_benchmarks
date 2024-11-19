@@ -22,7 +22,6 @@ fi
 programs_root="${path}/programs/"
 
 # Set up paths and variables
-simplescalar=${programs_root}"simplesim-3.0_acx2/sim-outorder"
 simplebpred=${programs_root}"simplesim-3.0_acx2/sim-bpred"
 fastfwd="-fastfwd 100000000"
 maxinst="-max:inst 100000000"
@@ -62,8 +61,8 @@ vpr_out="${path}/${outputs}vpr.out"
 vpr_err="${path}/${errors}vpr.err"
 
 pushd "${programs_root}/ammp/data/ref"
-${simplebpred} ${parameters} -bpred taken ${ammp_result}"_taken" ${ammp_exe} < ${ammp_in} > ${ammp_out} 2> ${ammp_err}"_taken"
-${simplebpred} ${parameters} -bpred nottaken ${ammp_result}"_nottaken" ${ammp_exe} < ${ammp_in} > ${ammp_out} 2> ${ammp_err}"_nottaken"
+${simplebpred} ${parameters} -bpred taken ${ammp_result}"_taken" ${ammp_exe} < ${ammp_in} > ${ammp_out} 2> ${ammp_err}
+${simplebpred} ${parameters} -bpred nottaken ${ammp_result}"_nottaken" ${ammp_exe} < ${ammp_in} > ${ammp_out} 2> ${ammp_err}
 popd
 
 pushd "${programs_root}/applu/data/ref"
